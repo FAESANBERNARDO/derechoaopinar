@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAE San Bernardo - Tu Opinión Importa</title>
+    <!-- Hoja de estilos CSS integrada directamente en el HTML -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Usando Inter como se recomienda */
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5; /* Un color de fondo más suave */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alineación al inicio para scroll si es necesario */
+            min-height: 100vh;
+            box-sizing: border-box; /* Incluir padding y border en el tamaño del elemento */
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px; /* Esquinas más redondeadas */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px; /* Margen superior para centrar verticalmente */
+        }
+
+        h1, h2 {
+            color: #0056b3;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px; /* Más padding para botones */
+            border: none;
+            border-radius: 8px; /* Esquinas redondeadas */
+            cursor: pointer;
+            font-size: 17px; /* Fuente ligeramente más grande */
+            font-weight: 500;
+            margin: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para botones */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* Efecto ligero al pasar el ratón */
+        }
+
+        button:active {
+            transform: translateY(0); /* Efecto al hacer clic */
+        }
+
+        .seccion-oculta {
+            display: none;
+            margin-top: 30px; /* Más margen superior */
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0; /* Color de borde más claro */
+            text-align: left; /* Alineación del texto dentro de las secciones */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 25px;
+        }
+
+        form label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form textarea {
+            width: calc(100% - 24px); /* Ajustar ancho por padding */
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box; /* Incluir padding en el ancho */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        form input[type="text"]:focus,
+        form input[type="number"]:focus,
+        form textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Resplandor al enfocar */
+            outline: none;
+        }
+
+        form textarea {
+            resize: vertical;
+            min-height: 100px; /* Altura mínima para el área de texto */
+        }
+
+        form button[type="submit"] {
+            align-self: center;
+            margin-top: 20px;
+            background-color: #28a745; /* Botón de enviar verde */
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+        }
+
+        form button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        .mensaje-oculto {
+            display: none;
+            color: #28a745; /* Mensaje de éxito verde */
+            margin-top: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-align: center;
+            background-color: #e6ffe6;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #28a745;
+        }
+
+        /* Estilos responsivos para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 10px;
+                padding: 20px;
+                border-radius: 8px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 15px;
+                margin: 8px;
+            }
+
+            form input[type="text"],
+            form input[type="number"],
+            form textarea {
+                width: calc(100% - 20px);
+                padding: 10px;
+                font-size: 15px;
+            }
+        }
+    </style>
+    <!-- Incluye EmailJS SDK con la URL actualizada -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@latest/dist/email.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenido a FAE San Bernardo</h1>
+        <p>¿Quién eres?</p>
+        <button id="btnNino">Niño, niña o adolescente</button>
+        <button id="btnPadre">Padre, madre o Cuidador/a</button>
+
+        <!-- Sección para Niño, Niña o Adolescente -->
+        <div id="seccionNino" class="seccion-oculta">
+            <h2>FAE San Bernardo, te invita a ejercer tu derecho a opinar</h2>
+            <p>Si eres niño, niña o adolescente y tienes algo que decir, nos encantaría leerte. Recuerda que si prefieres, también puedes hablarlo con tus profesionales a cargo de tus atenciones.</p>
+            <form id="formularioNino">
+                <label for="nombreNino">Nombre:</label>
+                <input type="text" id="nombreNino" name="user_name" required>
+
+                <label for="edadNino">Edad:</label>
+                <input type="number" id="edadNino" name="user_age" required min="0" max="18"> <!-- Edad típica para niños/adolescentes -->
+
+                <label for="opinionNino">Escribe a continuación tu opinión:</label>
+                <textarea id="opinionNino" name="user_opinion" rows="5" required></textarea>
+
+                <button type="submit">Ejercer mi derecho a opinar (enviar opinión)</button>
+            </form>
+            <p id="mensajeGraciasNino" class="mensaje-oculto">¡Gracias por compartir tu opinión, nos encantará leer lo que piensas!</p>
+        </div>
+
+        <!-- Sección para Padre, Madre o Cuidador/a -->
+        <div id="seccionPadre" class="seccion-oculta">
+            <h2>FAE San Bernardo, le invita a dejar sus consultas, sugerencias, reclamos o felicitaciones.</h2>
+            <p>Recuerde que también puede manifestar sus opinión a los profesionales a cargo del proceso de intervención, o al equipo de Dirección.</p>
+            <form id="formularioPadre">
+                <label for="nombrePadre">Nombre:</label>
+                <input type="text" id="nombrePadre" name="user_name" required>
+
+                <label for="nombreNinoAsociado">Nombre del niño/a asociado/a:</label>
+                <input type="text" id="nombreNinoAsociado" name="child_name" required>
+
+                <label for="parentesco">Parentesco:</label>
+                <input type="text" id="parentesco" name="user_relationship" required>
+
+                <label for="mensajePadre">Mensaje:</label>
+                <textarea id="mensajePadre" name="user_message" rows="5" required></textarea>
+
+                <button type="submit">Enviar</button>
+            </form>
+            <p id="mensajeGraciasPadre" class="mensaje-oculto">¡Gracias por compartir su opinión!</p>
+        </div>
+    </div>
+
+    <!-- Script JavaScript principal de la aplicación -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ======================================================================================================
+            // CONFIGURACIÓN DE EMAILJS - ESTOS VALORES YA HAN SIDO INSERTADOS SEGÚN TUS INSTRUCCIONES.
+            // La Public Key y el Service ID ya están configurados.
+            // Los Template IDs para niño y padre/madre también están configurados.
+            // ======================================================================================================
+
+            const EMAILJS_USER_ID = "qWSg--FgIjA-x5MUs"; // Tu Public Key (User ID) de EmailJS
+            const EMAILJS_SERVICE_ID = "service_34sup6g";   // Tu Service ID de EmailJS
+            const EMAILJS_TEMPLATE_ID_NINO = "template_7f36w5v"; // ID de la plantilla para opiniones de niño/a
+            const EMAILJS_TEMPLATE_ID_PADRE = "template_egzue9z"; // ID de la plantilla para consultas de padre/madre
+
+            // ======================================================================================================
+            // VERIFICACIÓN CRÍTICA: CORRESPONDENCIA DE NOMBRES DE CAMPOS Y VARIABLES EN PLANTILLAS
+            // Asegúrate de que los atributos 'name' de tus campos <input> y <textarea>
+            // en este HTML (ej: name="user_name", name="user_age") coincidan EXACTAMENTE
+            // con los nombres de las variables que usas en tus plantillas de EmailJS
+            // (ej: {{user_name}}, {{user_age}}). Cualquier diferencia causará que los datos no se envíen.
+            //
+            // TAMBIÉN: ¡VERIFICA "ALLOWED ORIGINS" EN TU CUENTA DE EMAILJS!
+            // Si estás probando la aplicación localmente (ej: http://localhost:8000) o en un dominio
+            // que no está listado en la sección "Email Services" -> (tu servicio) -> "Advanced" -> "Allowed Origins",
+            // la inicialización fallará. Añade tu URL de prueba allí.
+            // ======================================================================================================
+
+            // Inicializa EmailJS dentro de DOMContentLoaded para asegurar que el SDK esté cargado
+            if (typeof emailjs !== 'undefined' && emailjs.init) {
+                try {
+                    emailjs.init(EMAILJS_USER_ID);
+                    console.log("EmailJS SDK inicializado con éxito con USER_ID:", EMAILJS_USER_ID);
+                } catch (error) {
+                    console.error("Error al inicializar EmailJS SDK. Por favor, verifica en tu cuenta de EmailJS:", error);
+                    alert("Error al iniciar el servicio de correo. Revisa la consola del navegador (F12) para más detalles y verifica tu configuración en EmailJS (Public Key, estado del servicio, Allowed Origins).");
+                    // No hacemos 'return' aquí, permitimos que el resto del código se ejecute
+                    // para que los botones de la interfaz sigan funcionando, aunque el envío de correo falle.
+                }
+            } else {
+                console.error("EmailJS SDK no se ha cargado correctamente. Asegúrate de que la URL del script en <head> sea correcta.");
+                alert("Error crítico: El servicio de envío de correo no pudo cargarse. No se puede enviar el formulario.");
+                // Hacemos 'return' aquí porque el SDK es fundamental y si no carga, nada funcionará.
+                return;
+            }
+
+            // Obtener referencias a los elementos HTML
+            const btnNino = document.getElementById('btnNino');
+            const btnPadre = document.getElementById('btnPadre');
+            const seccionNino = document.getElementById('seccionNino');
+            const seccionPadre = document.getElementById('seccionPadre');
+            const formularioNino = document.getElementById('formularioNino');
+            const formularioPadre = document.getElementById('formularioPadre');
+            const mensajeGraciasNino = document.getElementById('mensajeGraciasNino');
+            const mensajeGraciasPadre = document.getElementById('mensajeGraciasPadre');
+
+            // --- Manejadores de eventos para los botones de selección de rol ---
+            btnNino.addEventListener('click', () => {
+                seccionNino.style.display = 'block'; // Muestra la sección del niño
+                seccionPadre.style.display = 'none';  // Oculta la sección del padre
+                mensajeGraciasNino.style.display = 'none'; // Asegura que el mensaje de gracias esté oculto
+                formularioNino.reset(); // Limpia el formulario
+            });
+
+            btnPadre.addEventListener('click', () => {
+                seccionPadre.style.display = 'block'; // Muestra la sección del padre
+                seccionNino.style.display = 'none';  // Oculta la sección del niño
+                mensajeGraciasPadre.style.display = 'none'; // Asegura que el mensaje de gracias esté oculto
+                formularioPadre.reset(); // Limpia el formulario
+            });
+
+            // --- Manejo del envío del formulario de Niño/a ---
+            formularioNino.addEventListener('submit', function(event) {
+                event.preventDefault(); // Previene el envío por defecto del formulario (recarga de página)
+
+                // Verifica si EmailJS está inicializado antes de intentar enviar
+                if (typeof emailjs === 'undefined' || !emailjs.isInitialized) {
+                    alert('Error: El servicio de envío de correo no está disponible. Revisa la consola del navegador para detalles.');
+                    return;
+                }
+                
+                // Define los parámetros que se enviarán a la plantilla de EmailJS
+                const templateParamsNino = {
+                    from_name: this.elements['user_name'].value,    // Valor del campo 'Nombre' del formulario
+                    from_age: this.elements['user_age'].value,      // Valor del campo 'Edad'
+                    message: this.elements['user_opinion'].value,   // Valor del campo 'Escribe a continuación tu opinión'
+                    to_email: 'derechoaopinarfaesanbernardo@gmail.com', // Dirección de correo fijo para recibir
+                    subject: 'Nueva Opinión de Niño/a - FAE San Bernardo' // Asunto del correo
+                };
+
+                // Envía el correo usando EmailJS
+                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_NINO, templateParamsNino)
+                    .then((response) => {
+                        console.log('Correo de Niño/a enviado con éxito!', response.status, response.text);
+                        formularioNino.style.display = 'none'; // Oculta el formulario
+                        mensajeGraciasNino.style.display = 'block'; // Muestra el mensaje de éxito
+                    }, (error) => {
+                        console.error('Fallo al enviar el correo de Niño/a:', error);
+                        // El error de EmailJS contendrá más detalles, se muestra en la consola.
+                        alert('Hubo un error al enviar tu opinión. Por favor, inténtalo de nuevo. Revisa la consola (F12) para más detalles del error.');
+                    });
+            });
+
+            // --- Manejo del envío del formulario de Padre/Madre/Cuidador/a ---
+            formularioPadre.addEventListener('submit', function(event) {
+                event.preventDefault(); // Previene el envío por defecto del formulario
+
+                // Verifica si EmailJS está inicializado antes de intentar enviar
+                if (typeof emailjs === 'undefined' || !emailjs.isInitialized) {
+                    alert('Error: El servicio de envío de correo no está disponible. Revisa la consola del navegador para detalles.');
+                    return;
+                }
+
+                // Define los parámetros para la plantilla de EmailJS para padres
+                const templateParamsPadre = {
+                    from_name: this.elements['user_name'].value,        // Nombre del Padre/Madre/Cuidador
+                    child_name: this.elements['child_name'].value,      // Nombre del niño/a asociado/a
+                    relationship: this.elements['user_relationship'].value, // Parentesco
+                    message: this.elements['user_message'].value,       // Contenido del mensaje
+                    to_email: 'derechoaopinarfaesanbernardo@gmail.com', // Dirección de correo fijo para recibir
+                    subject: 'Nueva Consulta/Sugerencia - FAE San Bernardo' // Asunto del correo
+                };
+
+                // Envía el correo usando EmailJS
+                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_PADRE, templateParamsPadre)
+                    .then((response) => {
+                        console.log('Correo de Padre/Madre enviado con éxito!', response.status, response.text);
+                        formularioPadre.style.display = 'none'; // Oculta el formulario
+                        mensajeGraciasPadre.style.display = 'block'; // Muestra el mensaje de éxito
+                    }, (error) => {
+                        console.error('Fallo al enviar el correo de Padre/Madre:', error);
+                        // El error de EmailJS contendrá más detalles, se muestra en la consola.
+                        alert('Hubo un error al enviar tu consulta. Por favor, inténtalo de nuevo. Revisa la consola (F12) para más detalles del error.');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
+
+
