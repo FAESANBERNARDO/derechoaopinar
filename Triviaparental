@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Reflexión Parental</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0f2fe; /* Lighter blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+            padding: 2.5rem; /* Increased padding */
+            max-width: 95%; /* Wider on smaller screens */
+            width: 600px; /* Max width */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative; /* For confetti */
+            border: 2px solid #93c5fd; /* Light blue border */
+        }
+        .btn {
+            @apply px-7 py-3.5 rounded-xl font-semibold transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105 active:scale-95; /* More prominent buttons */
+        }
+        .btn-primary {
+            @apply bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300;
+        }
+        .btn-option {
+            @apply bg-blue-50 text-blue-800 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full text-left border border-blue-200; /* Lighter options */
+        }
+        .btn-option.selected {
+            @apply bg-blue-200 border-blue-500;
+        }
+        .btn-option.correct {
+            @apply bg-green-200 border-green-500 text-green-800;
+        }
+        .btn-option.incorrect {
+            @apply bg-red-200 border-red-500 text-red-800;
+        }
+        .progress-bar {
+            @apply h-2.5 bg-blue-300 rounded-full mt-5; /* Thicker progress bar */
+        }
+        .progress-fill {
+            @apply h-full bg-blue-600 rounded-full transition-all duration-500 ease-in-out;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(15px); }
+        }
+
+        /* Confetti animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f; /* Pink */
+            opacity: 0;
+            animation: confetti-fall 3s ease-out forwards;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+        .confetti:nth-child(2n) { background-color: #0ff; /* Cyan */ }
+        .confetti:nth-child(3n) { background-color: #ff0; /* Yellow */ }
+        .confetti:nth-child(4n) { background-color: #f00; /* Red */ }
+        .confetti:nth-child(5n) { background-color: #0f0; /* Green */ }
+        .confetti:nth-child(6n) { background-color: #8a2be2; /* BlueViolet */ } /* Added more colors */
+        .confetti:nth-child(7n) { background-color: #ffa500; /* Orange */ }
+
+        @keyframes confetti-fall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(500px) rotate(720deg); }
+        }
+
+        /* Image styling */
+        .start-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer" class="game-container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="fade-in">
+            <h1 class="text-4xl font-extrabold text-blue-700 mb-5">🌟 Juego de Competencias Parentales 🌟</h1>
+            <img src="https://placehold.co/600x350/E0F2FE/3B82F6?text=Creciendo+Juntos" alt="Ilustración de una familia feliz creciendo junta" class="start-image">
+            <p class="text-lg text-gray-700 mb-6">Un espacio para reflexionar y fortalecer tus habilidades en la crianza con buen trato y modelos de crianza positivos.</p>
+            <button id="startButton" class="btn btn-primary">¡Empezar Aventura!</button>
+            <div class="mt-8 text-sm text-gray-500">
+                <p>FAE San Bernardo</p>
+                <p>Creado por Juan Sepúlveda</p>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="hidden fade-in">
+            <div class="text-xl font-semibold text-blue-600 mb-3" id="questionNumber"></div>
+            <h2 id="questionText" class="text-2xl font-bold text-gray-800 mb-8 leading-relaxed"></h2>
+            <div id="optionsContainer" class="grid grid-cols-1 gap-4 mb-7">
+                <!-- Options will be dynamically loaded here -->
+            </div>
+            <div id="feedbackContainer" class="p-5 rounded-xl text-left hidden mb-5 border-l-4 border-blue-500 bg-blue-50">
+                <p id="feedbackText" class="font-bold text-lg mb-2 text-blue-800"></p>
+                <p id="reflectionText" class="text-sm leading-relaxed text-gray-700"></p>
+            </div>
+            <button id="nextButton" class="btn btn-primary w-full hidden">Siguiente Pregunta 💪</button>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="endScreen" class="hidden fade-in">
+            <h2 class="text-4xl font-bold text-blue-700 mb-4">¡Gran Trabajo! 🎉</h2>
+            <p class="text-xl text-gray-700 mb-4">Tu puntuación final: <span id="finalScore" class="font-bold text-green-600"></span></p>
+            <p class="text-gray-600 mb-6" id="finalReflection"></p>
+            <p class="text-blue-600 font-semibold italic text-lg mb-8" id="motivationalQuote"></p>
+            <button id="restartButton" class="btn btn-primary">Volver a Jugar</button>
+            <div class="mt-8 text-sm text-gray-500">
+                <p>FAE San Bernardo</p>
+                <p>Creado por Juan Sepúlveda</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "¿Cuál es la base fundamental para construir una relación sólida y de confianza con tu hijo/a?",
+                options: [
+                    "Darle todo lo que pide para que sea feliz.",
+                    "La comunicación abierta y la escucha activa.",
+                    "Controlar todas sus decisiones para protegerlo.",
+                    "Evitar cualquier conflicto o desacuerdo."
+                ],
+                answer: "La comunicación abierta y la escucha activa.",
+                reflection: "La escucha activa y la comunicación genuina son el pilar de una relación parental fuerte. Permiten entender las necesidades y sentimientos de tu hijo/a, fomentando un vínculo de confianza mutua."
+            },
+            {
+                question: "Cuando tu hijo/a expresa una emoción intensa (tristeza, enojo), ¿cómo puedes demostrar empatía?",
+                options: [
+                    "Decirle que no es para tanto lo que siente.",
+                    "Distraerlo inmediatamente con algo divertido.",
+                    "Reconocer y nombrar su emoción ('Veo que estás triste/enojado').",
+                    "Ignorar la emoción para que aprenda a controlarse solo."
+                ],
+                answer: "Reconocer y nombrar su emoción ('Veo que estás triste/enojado').",
+                reflection: "Validar las emociones de tus hijos/as les enseña que sus sentimientos son importantes y que es natural sentirlos. Esto es clave para su desarrollo emocional y para que aprendan a gestionarlos saludablemente."
+            },
+            {
+                question: "¿Qué beneficio tiene establecer límites claros y consistentes para los niños/as?",
+                options: [
+                    "Restringe su libertad y creatividad.",
+                    "Les proporciona seguridad y les ayuda a entender las expectativas.",
+                    "Fomenta la rebeldía y el desafío a la autoridad.",
+                    "Hace que los padres se vean más autoritarios."
+                ],
+                answer: "Les proporciona seguridad y les ayuda a entender las expectativas.",
+                reflection: "Los límites son como un mapa: guían a los niños/as y les dan un sentido de seguridad. Saber qué esperar les permite explorar el mundo con confianza y desarrollar autodisciplina."
+            },
+            {
+                question: "¿Cómo puedes fomentar la autonomía en tu hijo/a de manera efectiva?",
+                options: [
+                    "Haciendo todo por ellos para evitar errores.",
+                    "Permitiéndoles tomar decisiones apropiadas para su edad.",
+                    "Diciéndoles exactamente qué hacer en cada momento.",
+                    "Resolviendo todos sus problemas sin que ellos intervengan."
+                ],
+                answer: "Permitiéndoles tomar decisiones apropiadas para su edad.",
+                reflection: "Fomentar la autonomía es dar alas a tus hijos/as para que aprendan a volar. Permitirles tomar pequeñas decisiones y enfrentar desafíos adecuados a su edad, les prepara para ser adultos capaces y seguros."
+            },
+            {
+                question: "¿Qué es un ejemplo de disciplina positiva?",
+                options: [
+                    "Castigos físicos o gritos cuando se portan mal.",
+                    "Ignorar el mal comportamiento con la esperanza de que desaparezca.",
+                    "Explicar las consecuencias de sus actos y buscar soluciones juntos.",
+                    "Amenazar con quitarles cosas que les gustan."
+                ],
+                answer: "Explicar las consecuencias de sus actos y buscar soluciones juntos.",
+                reflection: "La disciplina positiva se enfoca en enseñar y guiar, no solo en castigar. Al explicar y buscar soluciones, ayudas a tus hijos/as a desarrollar su conciencia, empatía y habilidades para resolver problemas."
+            },
+            {
+                question: "¿Por qué es importante el juego en el desarrollo de las competencias parentales?",
+                options: [
+                    "Es una forma de mantenerlos ocupados para que no molesten.",
+                    "Permite la conexión, el aprendizaje y la resolución de conflictos de forma lúdica.",
+                    "Solo sirve para el entretenimiento y no tiene valor educativo.",
+                    "Demuestra que los padres son permisivos."
+                ],
+                answer: "Permite la conexión, el aprendizaje y la resolución de conflictos de forma lúdica.",
+                reflection: "El juego es el lenguaje universal de los niños/as. A través de él, se fortalece el vínculo, se desarrollan habilidades cognitivas y sociales, y se resuelven desafíos de manera divertida y significativa."
+            },
+            {
+                question: "¿Qué significa ser un modelo a seguir para tus hijos/as?",
+                options: [
+                    "Ser perfecto/a y nunca cometer errores.",
+                    "Demostrar los valores y comportamientos que deseas que ellos aprendan.",
+                    "Dejar que aprendan por sí mismos sin tu guía.",
+                    "Exigirles lo que tú no estás dispuesto/a a hacer."
+                ],
+                answer: "Demostrar los valores y comportamientos que deseas que ellos aprendan.",
+                reflection: "Tus acciones hablan más fuerte que tus palabras. Ser un modelo a seguir significa vivir los valores que quieres inculcar, mostrando coherencia y autenticidad en tu día a día."
+            },
+            {
+                question: "¿Cómo puedes ayudar a tu hijo/a a desarrollar la resiliencia?",
+                options: [
+                    "Evitando que experimente cualquier dificultad o fracaso.",
+                    "Resolviendo siempre todos sus problemas.",
+                    "Enseñándole a manejar la frustración y a buscar soluciones ante los desafíos.",
+                    "Subestimando sus capacidades para que no se arriesgue."
+                ],
+                answer: "Enseñándole a manejar la frustración y a buscar soluciones ante los desafíos.",
+                reflection: "La resiliencia no es evitar caer, sino aprender a levantarse. Al permitir que tus hijos/as enfrenten desafíos con tu apoyo, les equipas con la fortaleza y la confianza para superar obstáculos futuros."
+            },
+            {
+                question: "¿Qué importancia tiene el autocuidado parental?",
+                options: [
+                    "Es un lujo egoísta que quita tiempo a los hijos.",
+                    "Permite a los padres recargar energías para ser más pacientes y efectivos.",
+                    "Demuestra debilidad y falta de compromiso.",
+                    "No tiene ningún impacto en la crianza."
+                ],
+                answer: "Permite a los padres recargar energías para ser más pacientes y efectivos.",
+                reflection: "Cuidar de ti mismo/a no es egoísmo, es una necesidad. Un padre o madre descansado/a y emocionalmente regulado/a tiene más paciencia, energía y capacidad para responder a las demandas de la crianza de forma positiva."
+            },
+            {
+                question: "¿Cuál es una señal de que estás practicando la escucha activa con tu hijo/a?",
+                options: [
+                    "Interrumpirlo/a para darle tu opinión.",
+                    "Estar mirando el teléfono mientras te habla.",
+                    "Mantener contacto visual, asentir y resumir lo que te dice.",
+                    "Preparar tu respuesta mientras él/ella aún está hablando."
+                ],
+                answer: "Mantener contacto visual, asentir y resumir lo que te dice.",
+                reflection: "La escucha activa es un regalo. Le muestra a tu hijo/a que su voz importa y que sus pensamientos y sentimientos son dignos de tu atención plena, fortaleciendo su autoestima y confianza en sí mismo/a."
+            },
+            {
+                question: "¿Por qué es importante reconocer y celebrar los pequeños logros de tu hijo/a?",
+                options: [
+                    "Para que se vuelva dependiente de tu aprobación.",
+                    "Refuerza su autoestima y motivación para seguir esforzándose.",
+                    "Genera una expectativa de recompensa constante.",
+                    "Desarrolla el narcisismo."
+                ],
+                answer: "Refuerza su autoestima y motivación para seguir esforzándose.",
+                reflection: "Cada pequeño logro es un paso gigante en el desarrollo de tu hijo/a. Celebrarlos, por insignificantes que parezcan, construye una base sólida de autoestima y les anima a seguir aprendiendo y creciendo."
+            },
+            {
+                question: "¿Cómo se aborda un berrinche o pataleta desde una perspectiva de buen trato?",
+                options: [
+                    "Gritando para que se calle inmediatamente.",
+                    "Ignorándolo/a por completo hasta que se calme solo/a.",
+                    "Ofreciendo consuelo, nombrando la emoción y estableciendo límites si es necesario.",
+                    "Cediendo a todas sus demandas para que se calme."
+                ],
+                answer: "Ofreciendo consuelo, nombrando la emoción y estableciendo límites si es necesario.",
+                reflection: "Un berrinche es una señal de que tu hijo/a está abrumado/a. Ofrecer consuelo y límites claros les ayuda a sentirse seguros/as y a aprender a regular sus emociones de forma constructiva."
+            },
+            {
+                question: "¿Qué papel juega la coherencia en la crianza?",
+                options: [
+                    "Es innecesaria, los niños se adaptan a cualquier cosa.",
+                    "Crea confusión y desorientación en los niños.",
+                    "Les proporciona un marco estable y predecible, fomentando la seguridad.",
+                    "Hace que la crianza sea demasiado rígida."
+                ],
+                answer: "Les proporciona un marco estable y predecible, fomentando la seguridad.",
+                reflection: "La coherencia es como un ancla para tus hijos/as. Les da estabilidad y les permite entender las reglas del mundo que les rodea, construyendo un sentido de seguridad y confianza."
+            },
+            {
+                question: "¿Cómo se promueve el pensamiento crítico en los niños/as?",
+                options: [
+                    "Dándoles siempre la respuesta correcta directamente.",
+                    "Animándolos a hacer preguntas y a buscar sus propias soluciones.",
+                    "Solo enseñándoles a memorizar datos.",
+                    "Reprendiéndolos cuando cuestionan algo."
+                ],
+                answer: "Animándolos a hacer preguntas y a buscar sus propias soluciones.",
+                reflection: "El pensamiento crítico es una herramienta poderosa. Alentar a tus hijos/as a cuestionar, explorar y resolver problemas por sí mismos, les prepara para enfrentar los desafíos de la vida con ingenio y creatividad."
+            },
+            {
+                question: "¿Cuál es una forma efectiva de fomentar la cooperación en el hogar?",
+                options: [
+                    "Asignar tareas sin explicación y esperar obediencia inmediata.",
+                    "Invitar a los hijos/as a participar en las decisiones familiares y tareas adecuadas a su edad.",
+                    "Hacerlo todo tú mismo/a para evitar discusiones.",
+                    "Pagarles por cada tarea que realicen."
+                ],
+                answer: "Invitar a los hijos/as a participar en las decisiones familiares y tareas adecuadas a su edad.",
+                reflection: "La cooperación florece cuando todos se sienten parte del equipo. Involucrar a tus hijos/as en las responsabilidades familiares les enseña sobre el trabajo en equipo, la responsabilidad y el valor de contribuir al hogar."
+            },
+            {
+                question: "¿Por qué es fundamental que los padres reflexionen sobre sus propios modelos de crianza heredados?",
+                options: [
+                    "Para justificar sus propias acciones pasadas.",
+                    "Para repetir exactamente lo que hicieron sus padres.",
+                    "Para identificar patrones positivos y negativos y elegir conscientemente cómo criar.",
+                    "No es necesario, cada generación es diferente."
+                ],
+                answer: "Para identificar patrones positivos y negativos y elegir conscientemente cómo criar.",
+                reflection: "La reflexión es el primer paso hacia el cambio y el crecimiento. Al entender cómo fuimos criados, podemos elegir conscientemente qué queremos replicar y qué queremos transformar para el bienestar de nuestros hijos/as."
+            },
+            {
+                question: "¿Cómo puedes ayudar a tu hijo/a a manejar la frustración?",
+                options: [
+                    "Ignorando su frustración hasta que se le pase.",
+                    "Diciéndole que no tiene motivos para frustrarse.",
+                    "Validando su sentimiento y ofreciéndole estrategias para superarlo.",
+                    "Haciendo la tarea por él/ella para evitarle la frustración."
+                ],
+                answer: "Validando su sentimiento y ofreciéndole estrategias para superarlo.",
+                reflection: "La frustración es una parte natural de la vida. Enseñar a tus hijos/as a reconocerla y a desarrollar herramientas para afrontarla les equipa con una valiosa habilidad para la vida."
+            },
+            {
+                question: "¿Qué tipo de lenguaje es más efectivo para guiar el comportamiento de un niño/a?",
+                options: [
+                    "Un lenguaje lleno de amenazas y advertencias.",
+                    "Un lenguaje positivo y descriptivo, centrado en lo que SÍ se puede hacer.",
+                    "Un lenguaje confuso y ambiguo.",
+                    "Un lenguaje crítico y descalificador."
+                ],
+                answer: "Un lenguaje positivo y descriptivo, centrado en lo que SÍ se puede hacer.",
+                reflection: "El lenguaje que usamos da forma a la realidad de nuestros hijos/as. Un lenguaje positivo y descriptivo les ayuda a entender mejor lo que esperas y fomenta un ambiente de respeto y aprendizaje."
+            },
+            {
+                question: "¿Por qué es importante reconocer el esfuerzo de tu hijo/a, más allá del resultado?",
+                options: [
+                    "Para que se vuelva dependiente de tu aprobación.",
+                    "Demuestra que valoras su dedicación y perseverancia, no solo el éxito.",
+                    "Genera una expectativa de recompensa constante.",
+                    "Desarrolla el narcisismo."
+                ],
+                answer: "Demuestra que valoras su dedicación y perseverancia, no solo el éxito.",
+                reflection: "El camino es tan importante como el destino. Al valorar el esfuerzo, enseñas a tus hijos/as el poder de la perseverancia, la resiliencia y la alegría de aprender y crecer, independientemente del resultado final."
+            },
+            {
+                question: "¿Cuál es un beneficio de dedicar tiempo de calidad a tus hijos/as diariamente?",
+                options: [
+                    "Es una obligación que hay que cumplir.",
+                    "Fortalece el vínculo afectivo y les hace sentir importantes y amados.",
+                    "Solo es necesario cuando hay problemas o conflictos.",
+                    "No es tan relevante como la cantidad de tiempo que se pasa con ellos."
+                ],
+                answer: "Fortalece el vínculo afectivo y les hace sentir importantes y amados.",
+                reflection: "El tiempo de calidad es un tesoro. Dedicar momentos exclusivos a tus hijos/as, incluso si son cortos, nutre su bienestar emocional y les recuerda que son la prioridad en tu vida."
+            }
+        ];
+
+        const motivationalQuotes = [
+            "La paternidad y maternidad son un viaje de aprendizaje constante. ¡Cada día es una nueva oportunidad para crecer juntos!",
+            "Ser padre/madre no es ser perfecto/a, es ser real. Tu amor y tu esfuerzo son más que suficientes.",
+            "Recuerda que estás construyendo recuerdos y sentando bases. Cada interacción cuenta.",
+            "En la crianza, la paciencia es una virtud y el amor es la brújula.",
+            "Tus hijos/as no necesitan un padre/madre perfecto/a, necesitan uno/a feliz, presente y que les ame incondicionalmente.",
+            "El regalo más grande que puedes dar a tus hijos/as es el de tu tiempo y tu atención plena.",
+            "Crianza es un acto de amor que se renueva cada día.",
+            "Con cada desafío, viene una oportunidad para modelar resiliencia y empatía.",
+            "Eres el universo para tus hijos/as. Tu presencia, amor y guía marcan la diferencia.",
+            "La magia de la crianza reside en los momentos pequeños y cotidianos."
+        ];
+
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        // Get DOM elements
+        const startScreen = document.getElementById('startScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const endScreen = document.getElementById('endScreen');
+
+        const startButton = document.getElementById('startButton');
+        const questionNumberElem = document.getElementById('questionNumber');
+        const questionTextElem = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const feedbackTextElem = document.getElementById('feedbackText');
+        const reflectionTextElem = document.getElementById('reflectionText');
+        const nextButton = document.getElementById('nextButton');
+        const progressFill = document.getElementById('progressFill');
+
+        const finalScoreElem = document.getElementById('finalScore');
+        const finalReflectionElem = document.getElementById('finalReflection');
+        const motivationalQuoteElem = document.getElementById('motivationalQuote');
+        const restartButton = document.getElementById('restartButton');
+        const gameContainer = document.getElementById('gameContainer');
+
+        // Event Listeners
+        startButton.addEventListener('click', startGame);
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', restartGame);
+
+        function startGame() {
+            startScreen.classList.add('fade-out');
+            setTimeout(() => {
+                startScreen.classList.add('hidden');
+                startScreen.classList.remove('fade-out');
+                quizScreen.classList.remove('hidden');
+                quizScreen.classList.add('fade-in');
+                currentQuestionIndex = 0;
+                score = 0;
+                loadQuestion();
+                updateProgressBar();
+            }, 600); // Wait for fade-out to complete
+        }
+
+        function loadQuestion() {
+            selectedOption = null; // Reset selected option
+            feedbackContainer.classList.add('hidden');
+            nextButton.classList.add('hidden');
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionNumberElem.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            questionTextElem.textContent = currentQuestion.question;
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-option');
+                button.addEventListener('click', () => selectOption(button, option, currentQuestion.answer));
+                optionsContainer.appendChild(button);
+            });
+
+            // Re-enable all buttons in case they were disabled
+            Array.from(optionsContainer.children).forEach(button => {
+                button.disabled = false;
+                button.classList.remove('selected', 'correct', 'incorrect');
+            });
+            updateProgressBar();
+        }
+
+        function selectOption(selectedButton, chosenOption, correctAnswer) {
+            if (selectedOption !== null) {
+                // If an option was already selected, prevent re-selection until next question
+                return;
+            }
+
+            selectedOption = selectedButton;
+            const isCorrect = chosenOption === correctAnswer;
+            const buttons = optionsContainer.children;
+
+            // Disable all buttons to prevent further clicks
+            Array.from(buttons).forEach(button => {
+                button.disabled = true;
+            });
+
+            // Highlight selected and correct/incorrect options
+            selectedButton.classList.add('selected');
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                score++;
+                showFeedback(true, questions[currentQuestionIndex].reflection);
+                triggerConfetti(); // Trigger confetti for correct answer
+            } else {
+                selectedButton.classList.add('incorrect');
+                // Highlight the correct answer
+                Array.from(buttons).forEach(button => {
+                    if (button.textContent === correctAnswer) {
+                        button.classList.add('correct');
+                    }
+                });
+                showFeedback(false, questions[currentQuestionIndex].reflection);
+            }
+
+            nextButton.classList.remove('hidden'); // Show next button
+        }
+
+        function showFeedback(isCorrect, reflection) {
+            feedbackContainer.classList.remove('hidden');
+            feedbackContainer.classList.remove('bg-green-100', 'bg-red-100', 'border-green-500', 'border-red-500'); // Reset colors
+            feedbackTextElem.classList.remove('text-green-800', 'text-red-800'); // Reset colors
+
+            if (isCorrect) {
+                feedbackContainer.classList.add('bg-green-100', 'border-green-500');
+                feedbackTextElem.classList.add('text-green-800');
+                feedbackTextElem.textContent = "¡Correcto! ✅ ¡Muy bien!";
+            } else {
+                feedbackContainer.classList.add('bg-red-100', 'border-red-500');
+                feedbackTextElem.classList.add('text-red-800');
+                feedbackTextElem.textContent = "¡Incorrecto! ❌ No te preocupes.";
+            }
+            reflectionTextElem.textContent = reflection;
+            feedbackContainer.classList.add('fade-in'); // Trigger fade-in
+        }
+
+        function nextQuestion() {
+            feedbackContainer.classList.add('fade-out'); // Fade out feedback
+            nextButton.classList.add('fade-out'); // Fade out next button
+            optionsContainer.classList.add('fade-out'); // Fade out options
+
+            setTimeout(() => {
+                feedbackContainer.classList.add('hidden');
+                nextButton.classList.add('hidden');
+                optionsContainer.classList.remove('fade-out'); // Remove fade-out class
+                feedbackContainer.classList.remove('fade-out'); // Remove fade-out class
+                nextButton.classList.remove('fade-out'); // Remove fade-out class
+
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 600); // Wait for fade-out to complete
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        function endGame() {
+            quizScreen.classList.add('fade-out');
+            setTimeout(() => {
+                quizScreen.classList.add('hidden');
+                quizScreen.classList.remove('fade-out');
+                endScreen.classList.remove('hidden');
+                endScreen.classList.add('fade-in');
+
+                finalScoreElem.textContent = `${score} de ${questions.length}`;
+                if (score === questions.length) {
+                    finalReflectionElem.textContent = "¡Felicidades! Has demostrado un conocimiento excepcional y un gran compromiso con el fortalecimiento de tus competencias parentales. ¡Eres un/a campeón/a de la crianza!";
+                } else if (score >= questions.length * 0.7) {
+                    finalReflectionElem.textContent = "¡Excelente trabajo! Has demostrado una gran comprensión de las competencias parentales. Continúa practicando y creciendo en este hermoso camino.";
+                } else if (score >= questions.length * 0.4) {
+                    finalReflectionElem.textContent = "¡Muy bien! Has respondido correctamente a muchas preguntas. Cada respuesta es una oportunidad para aprender y seguir desarrollando tus habilidades parentales.";
+                }
+                else {
+                    finalReflectionElem.textContent = "¡No te desanimes! Cada pregunta es un paso hacia un mayor entendimiento. Sigue explorando y verás cómo tus competencias parentales se fortalecen cada vez más.";
+                }
+
+                // Display a random motivational quote
+                const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+                motivationalQuoteElem.textContent = randomQuote;
+
+                triggerConfetti(true); // Trigger confetti for end game
+            }, 600); // Wait for fade-out to complete
+        }
+
+        function restartGame() {
+            endScreen.classList.add('fade-out');
+            setTimeout(() => {
+                endScreen.classList.add('hidden');
+                endScreen.classList.remove('fade-out');
+                startScreen.classList.remove('hidden');
+                startScreen.classList.add('fade-in');
+                currentQuestionIndex = 0;
+                score = 0;
+                selectedOption = null;
+                // Clear any lingering confetti
+                gameContainer.querySelectorAll('.confetti').forEach(c => c.remove());
+            }, 600); // Wait for fade-out to complete
+        }
+
+        // Function to trigger confetti effect
+        function triggerConfetti(isEndGame = false) {
+            const numConfetti = isEndGame ? 150 : 50; // More confetti for end game
+            for (let i = 0; i < numConfetti; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                // Distribute confetti around the center top for more visual appeal
+                const startX = 40 + Math.random() * 20; // from 40% to 60% width
+                confetti.style.left = `${startX}%`;
+                confetti.style.top = `${Math.random() * -30}px`; // Start higher above the container
+                confetti.style.animationDelay = `${Math.random() * 0.8}s`; // Longer delay range
+                confetti.style.transform = `scale(${0.6 + Math.random() * 0.7})`; // Larger size range
+                confetti.style.opacity = `${0.7 + Math.random() * 0.3}`; // Varying opacity
+                gameContainer.appendChild(confetti);
+
+                // Remove confetti after animation to prevent DOM clutter
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+            }
+        }
+
+        // Initial load
+        window.onload = () => {
+            // No initial action needed, start screen is visible by default.
+            // This ensures all elements are loaded before event listeners are attached.
+        };
+    </script>
+</body>
+</html>
+
