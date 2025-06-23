@@ -178,10 +178,6 @@
                 <label for="edadNino">Edad:</label>
                 <input type="number" id="edadNino" name="user_age" required min="0" max="18">
 
-                <!-- Campo de email eliminado según tu petición -->
-                <!-- <label for="emailNino">Tu Correo Electrónico (opcional):</label>
-                <input type="email" id="emailNino" name="user_email"> -->
-
                 <label for="opinionNino">Escribe a continuación tu opinión:</label>
                 <textarea id="opinionNino" name="user_opinion" rows="5" required></textarea>
 
@@ -197,10 +193,6 @@
             <form id="formularioPadre">
                 <label for="nombrePadre">Nombre:</label>
                 <input type="text" id="nombrePadre" name="user_name" required>
-
-                <!-- Campo de email eliminado según tu petición -->
-                <!-- <label for="emailPadre">Tu Correo Electrónico:</label>
-                <input type="email" id="emailPadre" name="user_email" required> -->
 
                 <label for="nombreNinoAsociado">Nombre del niño/a asociado/a:</label>
                 <input type="text" id="nombreNinoAsociado" name="child_name" required>
@@ -222,10 +214,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             // ======================================================================================================
             // CONFIGURACIÓN DE EMAILJS
-            // ¡ATENCIÓN! La Public Key se ha actualizado con la nueva que proporcionaste.
+            // Se usa tu Public Key actualizada.
             // ======================================================================================================
 
-            const EMAILJS_USER_ID = "FnoxoFefEg4tia-ub"; // <<< ¡TU NUEVO PUBLIC KEY DE EMAILJS AQUÍ!
+            const EMAILJS_USER_ID = "FnoxoFefEg4tia-ub"; // <<< ¡TU NUEVO PUBLIC KEY DE EMAILJS!
             const EMAILJS_SERVICE_ID = "service_34sup6g";   // Tu Service ID de EmailJS
             const EMAILJS_TEMPLATE_ID_NINO = "template_7f36w5v"; // ID de la plantilla para opiniones de niño/a
             const EMAILJS_TEMPLATE_ID_PADRE = "template_egzue9z"; // ID de la plantilla para consultas de padre/madre
@@ -233,14 +225,9 @@
             // ======================================================================================================
             // VERIFICACIÓN CRÍTICA: ¡IMPORTANTE!
             // 1. Asegúrate de que los atributos 'name' de tus campos <input> y <textarea> en este HTML
-            //    (ej: name="user_name", name="user_age", etc.) coincidan EXACTAMENTE
-            //    con los nombres de las variables que uses en tus plantillas de EmailJS (ej: {{user_name}}, {{user_age}}).
-            // 2. Dado que NO solicitamos el correo electrónico del usuario, las variables {{user_email}}
-            //    DEBEN SER ELIMINADAS de tus plantillas EmailJS y la configuración "Reply To" y "From Name"
-            //    deben ser configuradas de forma estática o con "Use Default Email Address".
-            // 3. Verifica "DOMAINS" (Orígenes Permitidos) en tu cuenta de EmailJS.
-            //    La URL "https://faesanbernardo.github.io" (o tu URL de prueba local) debe estar en la lista.
-            // 4. ¡Revisa el estado de tu dirección de correo en EmailJS! (debería decir "Protected", no "UNPROTECTED").
+            //    coincidan EXACTAMENTE con las variables {{...}} en tus plantillas de EmailJS.
+            // 2. Confirma que la dirección 'derechoaopinarfaesanbernardo@gmail.com' en EmailJS esté "Protected".
+            // 3. La URL "https://faesanbernardo.github.io" debe estar en la lista de "Domains" en EmailJS.
             // ======================================================================================================
 
             // Inicializa EmailJS dentro de DOMContentLoaded para asegurar que el SDK esté cargado
@@ -292,14 +279,16 @@
                     return;
                 }
                 
-                // Los parámetros enviados a la plantilla deben coincidir con las variables {{...}} en EmailJS
                 const templateParamsNino = {
                     user_name: this.elements['user_name'].value,    
                     user_age: this.elements['user_age'].value,      
                     user_opinion: this.elements['user_opinion'].value, 
-                    to_email: 'derechoaopinarfaesanbernardo@gmail.com', // Dirección de correo fija a la que llegan
-                    subject: 'Nueva Opinión de Niño/a - FAE San Bernardo' // Asunto estático
+                    to_email: 'derechoaopinarfaesanbernardo@gmail.com',
+                    subject: 'Nueva Opinión de Niño/a - FAE San Bernardo'
                 };
+
+                // ¡NUEVO! Log para ver los parámetros que se envían
+                console.log("Parámetros enviados para Niño/a:", templateParamsNino);
 
                 emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_NINO, templateParamsNino)
                     .then((response) => {
@@ -307,7 +296,8 @@
                         formularioNino.style.display = 'none';
                         mensajeGraciasNino.style.display = 'block';
                     }, (error) => {
-                        console.error('Fallo al enviar el correo de Niño/a:', error);
+                        // ¡NUEVO! Log completo del objeto de error de EmailJS
+                        console.error('Fallo al enviar el correo de Niño/a: ', error);
                         alert('Hubo un error al enviar tu opinión. Por favor, inténtalo de nuevo. Revisa la consola (F12) para más detalles del error.');
                     });
             });
@@ -321,15 +311,17 @@
                     return;
                 }
 
-                // Los parámetros enviados a la plantilla deben coincidir con las variables {{...}} en EmailJS
                 const templateParamsPadre = {
                     user_name: this.elements['user_name'].value,        
                     child_name: this.elements['child_name'].value,      
                     user_relationship: this.elements['user_relationship'].value, 
                     user_message: this.elements['user_message'].value,       
-                    to_email: 'derechoaopinarfaesanbernardo@gmail.com', // Dirección de correo fija a la que llegan
-                    subject: 'Nueva Consulta/Sugerencia - FAE San Bernardo' // Asunto estático
+                    to_email: 'derechoaopinarfaesanbernardo@gmail.com',
+                    subject: 'Nueva Consulta/Sugerencia - FAE San Bernardo'
                 };
+
+                // ¡NUEVO! Log para ver los parámetros que se envían
+                console.log("Parámetros enviados para Padre/Madre:", templateParamsPadre);
 
                 emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_PADRE, templateParamsPadre)
                     .then((response) => {
@@ -337,7 +329,8 @@
                         formularioPadre.style.display = 'none';
                         mensajeGraciasPadre.style.display = 'block';
                     }, (error) => {
-                        console.error('Fallo al enviar el correo de Padre/Madre:', error);
+                        // ¡NUEVO! Log completo del objeto de error de EmailJS
+                        console.error('Fallo al enviar el correo de Padre/Madre: ', error);
                         alert('Hubo un error al enviar tu consulta. Por favor, inténtalo de nuevo. Revisa la consola (F12) para más detalles del error.');
                     });
             });
