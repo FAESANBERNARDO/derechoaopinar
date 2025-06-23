@@ -222,10 +222,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             // ======================================================================================================
             // CONFIGURACIÓN DE EMAILJS
-            // Estos valores son los que hemos estado utilizando y deberían ser correctos para tu cuenta.
+            // ¡ATENCIÓN! La Public Key se ha actualizado con la nueva que proporcionaste.
             // ======================================================================================================
 
-            const EMAILJS_USER_ID = "qWSg--FgIjA-x5MUs"; // Tu Public Key (User ID) de EmailJS
+            const EMAILJS_USER_ID = "FnoxoFefEg4tia-ub"; // <<< ¡TU NUEVO PUBLIC KEY DE EMAILJS AQUÍ!
             const EMAILJS_SERVICE_ID = "service_34sup6g";   // Tu Service ID de EmailJS
             const EMAILJS_TEMPLATE_ID_NINO = "template_7f36w5v"; // ID de la plantilla para opiniones de niño/a
             const EMAILJS_TEMPLATE_ID_PADRE = "template_egzue9z"; // ID de la plantilla para consultas de padre/madre
@@ -240,6 +240,7 @@
             //    deben ser configuradas de forma estática o con "Use Default Email Address".
             // 3. Verifica "DOMAINS" (Orígenes Permitidos) en tu cuenta de EmailJS.
             //    La URL "https://faesanbernardo.github.io" (o tu URL de prueba local) debe estar en la lista.
+            // 4. ¡Revisa el estado de tu dirección de correo en EmailJS! (debería decir "Protected", no "UNPROTECTED").
             // ======================================================================================================
 
             // Inicializa EmailJS dentro de DOMContentLoaded para asegurar que el SDK esté cargado
